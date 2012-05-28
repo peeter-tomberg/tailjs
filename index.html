@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>TailJS</title>
+	<script src="https://raw.github.com/documentcloud/underscore/master/underscore.js"></script>
+	<script src="https://raw.github.com/documentcloud/backbone/master/backbone.js"></script>
+	<script src="http://code.jquery.com/jquery-1.7.2.js"></script>
+	<script src="js/tail.js"></script>
+</head>
+<body>
+
+	<input style="display: none;" id="file" type="file"/>
+
+	<div id="output"></output>
+
+</body>
+</html>
+
+
+
+<script>
+
+$("html").bind("dragover", function() {
+	
+	$("#file")
+		.css("height", $(window).height()*0.95)
+		.css("width", $(window).width()*0.95)
+		.css("display", "block");
+	
+	
+});
+
+$("html").bind("drop", function() {
+	
+	$("#file")
+		.css("height", 1)
+		.css("width", 1)
+		.css("display", "none");
+	
+});
+
+var fileInput = document.getElementById("file");
+
+fileInput.addEventListener("change", function() { 
+	var tail = new Tail(fileInput.files[0]);
+	console.log("tail", tail);
+	
+	tail.bind("new_content", function(content) {
+		output.innerHTML += content;
+	});
+});
+</script>​
