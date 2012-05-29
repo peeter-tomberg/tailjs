@@ -33,8 +33,6 @@ function Tail(file, options) {
 		polling_speed : 1000
 	});
 	
-	console.log(this.options );
-	
 	this.bind("check_for_updates", function() {
 		
 		if(self.file.size > self.size) {

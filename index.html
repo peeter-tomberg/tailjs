@@ -49,10 +49,13 @@
 
 var $tabs = $('#tabs').tabs();
 var files = {};
+var height = $(window).height();
 
 
 $tabs.bind( "tabsselect", function(event, ui) {
+	console.log($(ui.panel));
 	$(ui.tab).removeClass("ui-state-highlight");
+	$(ui.panel).scrollTop($(ui.panel).height());
 });
 
 $("html").bind("dragover", function() {
@@ -74,7 +77,7 @@ $("html").bind("drop", function() {
 	
 });
 
-var height = $(window).height();
+
 
 $(document).resize(function() {
 	height = $(window).height();
@@ -113,7 +116,7 @@ fileInput.addEventListener("change", function() {
 				}
 				
 				//Handle scrolling
-				$tab.scrollTop($tab.height()+height);
+				$tab.scrollTop($tab.height());
 				
 			});
 			
