@@ -8,7 +8,7 @@
 	<script src=" https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.js"></script>
 	<script src="js/tail.js"></script>
-	
+	<script src="https://raw.github.com/inuyaksa/jquery.nicescroll/master/jquery.nicescroll.js"></script>
 	<link rel="stylesheet" type="text/css" href="./themes/absolution/absolution.blue.css"></link>
 
 	<style type="text/css">
@@ -23,9 +23,8 @@
 		span.options { float: right; display: block; }
 		
 		.textarea {
-			margin-top : 10px;
-			overflow-y: scroll;
-			overflow-x : none;
+			margin: 0px;
+			padding: 0px;
 		}
 		
 	</style>
@@ -49,13 +48,29 @@
 
 var $tabs = $('#tabs').tabs();
 var files = {};
-var height = $(window).height();
+var height = $(window).height() - 200;
 
 
 $tabs.bind( "tabsselect", function(event, ui) {
-	console.log($(ui.panel));
+	
+	var $header = $(ui.tab);
+	var $textarea = $(ui.panel).find(".textarea");
+	
+	$header.removeClass("ui-state-highlight");
+	_.delay(function() {
+		$textarea.niceScroll().checkContentSize();
+		$textarea.niceScroll().scrollTop($textarea.prop("scrollHeight")); 		
+	}, 50);
+
+	
+	console.log($textarea);
+/*	
+	$textarea = $(ui.panel).find(".textarea");
+	$.slimScroll({ height : height });
+	$.slimScroll({ scroll: $(ui.panel).height() + "px" });
 	$(ui.tab).removeClass("ui-state-highlight");
-	$(ui.panel).scrollTop($(ui.panel).height());
+	//$(ui.panel).scrollTop($(ui.panel).height());
+*/
 });
 
 $("html").bind("dragover", function() {
@@ -79,9 +94,10 @@ $("html").bind("drop", function() {
 
 
 
-$(document).resize(function() {
-	height = $(window).height();
-	$(".textarea").css("max-height", height);
+$(window).resize(function() {
+	height = $(window).height() - 200;
+	$(".textarea").css("height", height).niceScroll().checkContentSize();
+	
 });
 
 var fileInput = document.getElementById("file");
@@ -100,14 +116,20 @@ fileInput.addEventListener("change", function() {
 			$tabs.tabs("add", id, file.name, index);
 			
 			var $tab = $(id);
+			var $textarea = $("<div/>", { "class" :  "textarea", "style" : "height:"+height+"px;" })
 			
-			$tab.addClass("textarea");
-			$tab.css("max-height", height);
+			$tab.append($textarea);
+			$textarea.niceScroll({autohidemode : false}).init();
 			
 			tail.bind("new_content", function(content) {
 				
+				//Should we scroll?
+				var scroll = ($textarea.prop("scrollHeight") - $textarea.prop("scrollTop") - height == 0); 
+				
+				console.log($textarea.prop("scrollHeight"), $textarea.prop("scrollTop"), height);
+				
 				//Append the text
-				$tab.append(content.replace(/\n/g, '<br/>'));
+				$textarea.append(content.replace(/\n/g, '<br/>'));
 				
 				
 				//Current focus is on another tab, lets highlight this tab
@@ -115,8 +137,11 @@ fileInput.addEventListener("change", function() {
 					$tabs.find('[href="#' + $tab.attr("id") + '"]').addClass("ui-state-highlight");
 				}
 				
-				//Handle scrolling
-				$tab.scrollTop($tab.height());
+				//Handle scrolling if we were at the bottom
+				if(scroll) 
+					$textarea.niceScroll().scrollTop($textarea.prop("scrollHeight")); 
+				
+				$textarea.niceScroll().checkContentSize();
 				
 			});
 			
