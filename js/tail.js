@@ -1,27 +1,39 @@
 /**
  * 
- * @param file
+ * Enables browser-based file tailing
+ * 
+ * @param file - the file to be tailed
+ * @param options - the options 
  * @returns {Tail}
  * 
- * @event check_for_updates 					- triggered every 1 second, checks if the file has been changed
+ * @event check_for_updates - triggered every 1 second, checks if the file has been changed
  * @event file_size_changed(old_size, new_size) - triggered when a file change is detected
- * @event new_content(content_string)			- triggered when new contnet is read from the file
+ * @event new_content(content_string) - triggered when new content is read from the file
  */
-function Tail(file) {
+function Tail(file, options) {
 	
 	if(!(this instanceof Tail))
-		throw "Please create a new object to Tail";
+		throw "Please create a new object of Tail";
 
-	if(file === undefined)
+	if(!(file instanceof File))
 		throw "File required";
 	
-	//Lets have some events
+	//TODO: Better event system, with name-spaces
+	if(typeof(Backbone) === "undefined" || typeof(Backbone.Events) === "undefined") {
+		throw "Backbone.Events required";
+	}
 	_.extend(this, Backbone.Events);
 	
 	var self = this;
 	
 	this.file = file;
 	this.size = file.size;
+	
+	this.options = _.defaults(options || {}, {
+		polling_speed : 1000
+	});
+	
+	console.log(this.options );
 	
 	this.bind("check_for_updates", function() {
 		
@@ -32,7 +44,7 @@ function Tail(file) {
 		
 		setTimeout(function() {
 			self.trigger("check_for_updates");
-		}, 1000);
+		}, self.options.polling_speed);
 	
 	});
 

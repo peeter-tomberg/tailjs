@@ -4,21 +4,56 @@
     <title>TailJS</title>
 	<script src="https://raw.github.com/documentcloud/underscore/master/underscore.js"></script>
 	<script src="https://raw.github.com/documentcloud/backbone/master/backbone.js"></script>
-	<script src="http://code.jquery.com/jquery-1.7.2.js"></script>
+	
+	<script src=" https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.js"></script>
 	<script src="js/tail.js"></script>
+	
+	<link rel="stylesheet" type="text/css" href="./themes/absolution/absolution.blue.css"></link>
+
+	<style type="text/css">
+		/*demo page css*/
+		body { font: 65% "Trebuchet MS", sans-serif; margin: 50px;}
+		form input, div.uploader, div.selector { float: right; width: 74%; }
+		form label { float: left; display: block; margin: 7px 0px 7px 0px; width: 24% }
+		ul { margin: 0; padding: 0; }
+		ul li { margin: 0; padding: 5px; list-style: none; border-bottom: 1px solid #c1c1c1; }
+		ul li.last { border: none; }
+		#accordion-downloads ul li { line-height: 26px; }
+		span.options { float: right; display: block; }
+		
+		.textarea {
+			margin-top : 10px;
+			overflow-y: scroll;
+			overflow-x : none;
+		}
+		
+	</style>
 </head>
 <body>
 
-	<input style="display: none;" id="file" type="file"/>
-
-	<div id="output"></output>
-
-</body>
+	<input style="display: none;" multiple=true id="file" type="file"/>
+	<h1>Tail JS</h1>
+	<h3>Drag your log file into the browser window to start tailing</h3>
+	<div id="dialog" title="">
+		<div id="tabs"> 
+        	<ul>
+        	</ul>
+	    </div>
+		</div>	
+	</body>
 </html>
 
 
-
 <script>
+
+var $tabs = $('#tabs').tabs();
+var files = {};
+
+
+$tabs.bind( "tabsselect", function(event, ui) {
+	$(ui.tab).removeClass("ui-state-highlight");
+});
 
 $("html").bind("dragover", function() {
 	
@@ -39,14 +74,52 @@ $("html").bind("drop", function() {
 	
 });
 
+var height = $(window).height();
+
+$(document).resize(function() {
+	height = $(window).height();
+	$(".textarea").css("max-height", height);
+});
+
 var fileInput = document.getElementById("file");
 
 fileInput.addEventListener("change", function() { 
-	var tail = new Tail(fileInput.files[0]);
-	console.log("tail", tail);
-	
-	tail.bind("new_content", function(content) {
-		output.innerHTML += content;
+
+	_.each(fileInput.files, function(file) {
+		
+		if(files[file.name] === undefined) {
+
+			var tail = new Tail(file);
+			var index = _.size(files);
+			var id = "#tabs_" + index;
+			
+			files[file.name] = id;
+			$tabs.tabs("add", id, file.name, index);
+			
+			var $tab = $(id);
+			
+			$tab.addClass("textarea");
+			$tab.css("max-height", height);
+			
+			tail.bind("new_content", function(content) {
+				
+				//Append the text
+				$tab.append(content.replace(/\n/g, '<br/>'));
+				
+				
+				//Current focus is on another tab, lets highlight this tab
+				if($tabs.tabs("option", "selected") != index) {
+					$tabs.find('[href="#' + $tab.attr("id") + '"]').addClass("ui-state-highlight");
+				}
+				
+				//Handle scrolling
+				$tab.scrollTop($tab.height()+height);
+				
+			});
+			
+			
+			
+		}
 	});
 });
-</script>​
+</script>
