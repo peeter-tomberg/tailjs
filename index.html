@@ -1,153 +1,51 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>TailJS</title>
-	<script src="https://raw.github.com/documentcloud/underscore/master/underscore.js"></script>
-	<script src="https://raw.github.com/documentcloud/backbone/master/backbone.js"></script>
-	
-	<script src=" https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.js"></script>
-	<script src="js/tail.js"></script>
-	<script src="https://raw.github.com/inuyaksa/jquery.nicescroll/master/jquery.nicescroll.js"></script>
+    <title>Tail JS</title>
 	<link rel="stylesheet" type="text/css" href="./themes/absolution/absolution.blue.css"></link>
-
 	<style type="text/css">
-		/*demo page css*/
 		body { font: 65% "Trebuchet MS", sans-serif; margin: 50px;}
-		form input, div.uploader, div.selector { float: right; width: 74%; }
-		form label { float: left; display: block; margin: 7px 0px 7px 0px; width: 24% }
-		ul { margin: 0; padding: 0; }
-		ul li { margin: 0; padding: 5px; list-style: none; border-bottom: 1px solid #c1c1c1; }
-		ul li.last { border: none; }
-		#accordion-downloads ul li { line-height: 26px; }
-		span.options { float: right; display: block; }
-		
+		.source  { float: right; }
+		.tutorial { float: left; }
+		.clear {
+			clear: both;
+		}
 		.textarea {
 			margin: 0px;
 			padding: 0px;
 		}
-		
 	</style>
 </head>
+
 <body>
 
 	<input style="display: none;" multiple=true id="file" type="file"/>
+	
 	<h1>Tail JS</h1>
-	<h3>Drag your log file into the browser window to start tailing</h3>
+	
+	<h3 class="tutorial">Drag your log file into the browser window to start tailing</h3>
+	<h3 class="source">Source code available at <a href="https://github.com/peeter-tomberg/tailjs">GitHub</a></h3>
+	<div class="clear"></div>
+	
 	<div id="dialog" title="">
 		<div id="tabs"> 
         	<ul>
         	</ul>
 	    </div>
 		</div>	
-	</body>
+</body>
+
+	
+<script src=" https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.js"></script>
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min.js"></script>
+
+<script src="js/plugins/jquery.nicescroll.js"></script>
+
+<script src="js/tail.js"></script>
+<script src="js/app.js"></script>
+
 </html>
 
-
-<script>
-
-var $tabs = $('#tabs').tabs();
-var files = {};
-var height = $(window).height() - 200;
-
-
-$tabs.bind( "tabsselect", function(event, ui) {
-	
-	var $header = $(ui.tab);
-	var $textarea = $(ui.panel).find(".textarea");
-	
-	$header.removeClass("ui-state-highlight");
-	_.delay(function() {
-		$textarea.niceScroll().checkContentSize();
-		$textarea.niceScroll().scrollTop($textarea.prop("scrollHeight")); 		
-	}, 50);
-
-	
-	console.log($textarea);
-/*	
-	$textarea = $(ui.panel).find(".textarea");
-	$.slimScroll({ height : height });
-	$.slimScroll({ scroll: $(ui.panel).height() + "px" });
-	$(ui.tab).removeClass("ui-state-highlight");
-	//$(ui.panel).scrollTop($(ui.panel).height());
-*/
-});
-
-$("html").bind("dragover", function() {
-	
-	$("#file")
-		.css("height", $(window).height()*0.95)
-		.css("width", $(window).width()*0.95)
-		.css("display", "block");
-	
-	
-});
-
-$("html").bind("drop", function() {
-	
-	$("#file")
-		.css("height", 1)
-		.css("width", 1)
-		.css("display", "none");
-	
-});
-
-
-
-$(window).resize(function() {
-	height = $(window).height() - 200;
-	$(".textarea").css("height", height).niceScroll().checkContentSize();
-	
-});
-
-var fileInput = document.getElementById("file");
-
-fileInput.addEventListener("change", function() { 
-
-	_.each(fileInput.files, function(file) {
-		
-		if(files[file.name] === undefined) {
-
-			var tail = new Tail(file);
-			var index = _.size(files);
-			var id = "#tabs_" + index;
-			
-			files[file.name] = id;
-			$tabs.tabs("add", id, file.name, index);
-			
-			var $tab = $(id);
-			var $textarea = $("<div/>", { "class" :  "textarea", "style" : "height:"+height+"px;" })
-			
-			$tab.append($textarea);
-			$textarea.niceScroll({autohidemode : false}).init();
-			
-			tail.bind("new_content", function(content) {
-				
-				//Should we scroll?
-				var scroll = ($textarea.prop("scrollHeight") - $textarea.prop("scrollTop") - height == 0); 
-				
-				console.log($textarea.prop("scrollHeight"), $textarea.prop("scrollTop"), height);
-				
-				//Append the text
-				$textarea.append(content.replace(/\n/g, '<br/>'));
-				
-				
-				//Current focus is on another tab, lets highlight this tab
-				if($tabs.tabs("option", "selected") != index) {
-					$tabs.find('[href="#' + $tab.attr("id") + '"]').addClass("ui-state-highlight");
-				}
-				
-				//Handle scrolling if we were at the bottom
-				if(scroll) 
-					$textarea.niceScroll().scrollTop($textarea.prop("scrollHeight")); 
-				
-				$textarea.niceScroll().checkContentSize();
-				
-			});
-			
-			
-			
-		}
-	});
-});
-</script>
