@@ -30,7 +30,7 @@ function Tail(file, options) {
 	this.size = file.size;
 	
 	this.options = _.defaults(options || {}, {
-		polling_speed : 1000
+		polling_speed : 200
 	});
 	
 	this.bind("check_for_updates", function() {
